@@ -39,8 +39,9 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      /* Margen superior extra holgado para despejar completamente la Isla Dinámica */
+      /* Margen superior holgado para librar completamente la Isla Dinámica */
       padding-top: calc(var(--safe-top) + 48px);
+      /* Margen inferior para librar la cápsula flotante */
       padding-bottom: calc(115px + var(--safe-bottom));
       overflow-x: hidden;
     }
@@ -62,7 +63,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* ISLA FLOTANTE MINECRAFT-STYLE */
+    /* ISLA FLOTANTE MINECRAFT */
     .tab-bar-floating {
       position: fixed;
       bottom: calc(14px + var(--safe-bottom));
@@ -70,7 +71,7 @@
       transform: translateX(-50%);
       width: calc(100% - 36px);
       max-width: 360px;
-      background: rgba(22, 22, 22, 0.90);
+      background: rgba(22, 22, 22, 0.92);
       backdrop-filter: blur(25px);
       -webkit-backdrop-filter: blur(25px);
       border: 1px solid rgba(255, 255, 255, 0.12);
@@ -104,7 +105,6 @@
       color: var(--gold);
     }
     
-    /* Iconos Pixel Art estilo Minecraft */
     .pixel-icon {
       width: 24px;
       height: 24px;
@@ -127,9 +127,6 @@
       margin-bottom: 16px;
     }
 
-    .view-header {
-      margin-bottom: 16px;
-    }
     .view-header-flex {
       display: flex;
       justify-content: space-between;
@@ -185,6 +182,19 @@
       color: var(--text-muted);
       font-size: 0.9rem;
       margin-top: 4px;
+    }
+
+    .streak-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(229, 184, 59, 0.15);
+      color: var(--gold);
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin-top: 6px;
     }
 
     /* BARRA DE PROGRESO */
@@ -316,7 +326,7 @@
     .rec-title { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .rec-author { font-size: 0.75rem; color: var(--text-muted); }
 
-    /* TOAST MENSAJE POSITIVO */
+    /* TOAST MENSAJE */
     .toast {
       position: fixed;
       top: calc(var(--safe-top) + 20px);
@@ -395,7 +405,6 @@
 </head>
 <body>
 
-  <!-- TOAST REFUERZO POSITIVO -->
   <div id="toast-msg" class="toast">¡Gran avance! Cada página cuenta 📖🔥</div>
 
   <!-- PESTAÑA 1: LECTURA EN CURSO -->
@@ -413,6 +422,7 @@
         <div class="book-meta">
           <h1 id="book-title">Cargando...</h1>
           <p id="book-author">...</p>
+          <div class="streak-badge" id="streak-indicator">🔥 0 días seguidos</div>
           <div style="margin-top: 10px; display: flex; gap: 8px;">
             <label class="btn btn-secondary btn-sm" style="cursor: pointer;">
               📸 Foto
@@ -447,7 +457,7 @@
 
   <!-- PESTAÑA 2: BITÁCORA Y CITAS -->
   <section id="view-journal" class="view">
-    <div class="view-header">
+    <div style="margin-bottom: 16px;">
       <h2>Mi Bitácora</h2>
       <p id="journal-book-subtitle" style="font-size: 0.85rem; color: var(--gold); margin-top: 2px;">
         Sin libro activo en curso
@@ -494,7 +504,7 @@
     <div class="card">
       <h3>🧬 Tu ADN de Lector</h3>
       <p id="dna-description" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">
-        Agrega libros para que la app conozca tus géneros favoritos.
+        Agrega libros para que la app conozca tus géneros preferidos.
       </p>
       <div id="dna-tags"></div>
     </div>
@@ -525,21 +535,30 @@
         <p style="font-size: 0.85rem; color: var(--text-muted);">Tus libros terminados aparecerán aquí.</p>
       </div>
     </div>
+
+    <!-- RESPALDO DE DATOS -->
+    <div class="card" style="text-align: center;">
+      <h3 style="margin-bottom: 6px;">Copia de Seguridad</h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Guarda tus libros, citas y tiempos en un archivo de respaldo.</p>
+      <div style="display: flex; gap: 8px; justify-content: center;">
+        <button class="btn btn-secondary btn-sm" onclick="exportBackup()">📥 Descargar Respaldo</button>
+        <label class="btn btn-secondary btn-sm" style="cursor: pointer;">
+          📤 Restaurar
+          <input type="file" accept=".json" style="display: none;" onchange="importBackup(event)">
+        </label>
+      </div>
+    </div>
   </section>
 
   <!-- ISLA DE NAVEGACIÓN FLOTANTE (MINECRAFT EDITION) -->
   <nav class="tab-bar-floating">
-    <!-- Icono 1: Libro de Minecraft -->
     <button class="tab-btn active" onclick="switchTab('reading')">
       <div class="pixel-icon">
         <svg viewBox="0 0 16 16" width="22" height="22">
-          <!-- Cuero / Tapa -->
           <rect x="2" y="2" width="12" height="12" fill="#8B4513"/>
           <rect x="1" y="3" width="14" height="10" fill="#6A330B"/>
-          <!-- Páginas -->
           <rect x="4" y="3" width="8" height="9" fill="#FFF8DC"/>
           <rect x="4" y="4" width="7" height="7" fill="#F5DEB3"/>
-          <!-- Lomo & Broche dorado -->
           <rect x="2" y="3" width="2" height="10" fill="#4A2306"/>
           <rect x="8" y="7" width="2" height="2" fill="#D4AF37"/>
         </svg>
@@ -547,17 +566,14 @@
       <span>Lectura</span>
     </button>
 
-    <!-- Icono 2: Papel de Minecraft -->
     <button class="tab-btn" onclick="switchTab('journal')">
       <div class="pixel-icon">
         <svg viewBox="0 0 16 16" width="22" height="22">
-          <!-- Hoja pixelada en diagonal -->
           <rect x="5" y="2" width="7" height="1" fill="#DCDCDC"/>
           <rect x="4" y="3" width="9" height="1" fill="#E8E8E8"/>
           <rect x="3" y="4" width="10" height="7" fill="#FFFFFF"/>
           <rect x="4" y="11" width="9" height="1" fill="#E8E8E8"/>
           <rect x="5" y="12" width="7" height="1" fill="#C8C8C8"/>
-          <!-- Líneas de texto -->
           <rect x="5" y="5" width="5" height="1" fill="#8B949E"/>
           <rect x="5" y="7" width="6" height="1" fill="#8B949E"/>
           <rect x="5" y="9" width="4" height="1" fill="#8B949E"/>
@@ -566,21 +582,16 @@
       <span>Bitácora</span>
     </button>
 
-    <!-- Icono 3: Librería / Biblioteca de Minecraft -->
     <button class="tab-btn" onclick="switchTab('library')">
       <div class="pixel-icon">
         <svg viewBox="0 0 16 16" width="22" height="22">
-          <!-- Bloque de madera de Roble -->
           <rect x="1" y="1" width="14" height="14" fill="#A06E3B"/>
           <rect x="2" y="2" width="12" height="12" fill="#7A4F23"/>
-          <!-- Repisa superior de libros -->
           <rect x="3" y="3" width="2" height="4" fill="#B22222"/>
           <rect x="5" y="3" width="2" height="4" fill="#2E8B57"/>
           <rect x="7" y="3" width="3" height="4" fill="#4169E1"/>
           <rect x="10" y="3" width="3" height="4" fill="#DAA520"/>
-          <!-- Repisa intermedia madera -->
           <rect x="2" y="7" width="12" height="2" fill="#A06E3B"/>
-          <!-- Repisa inferior de libros -->
           <rect x="3" y="9" width="3" height="4" fill="#8B008B"/>
           <rect x="6" y="9" width="2" height="4" fill="#CD5C5C"/>
           <rect x="8" y="9" width="3" height="4" fill="#20B2AA"/>
@@ -643,7 +654,7 @@
     </div>
   </div>
 
-  <!-- MODAL: FINALIZAR SESIÓN DE LECTURA -->
+  <!-- MODAL: FINALIZAR SESIÓN -->
   <div class="modal-overlay" id="modal-end-session">
     <div class="modal-content">
       <h3>¡Sesión Terminada! ⏱️</h3>
@@ -680,7 +691,7 @@
     </div>
   </div>
 
-  <!-- MODAL: TERMINAR Y CALIFICAR LIBRO -->
+  <!-- MODAL: TERMINAR Y CALIFICAR -->
   <div class="modal-overlay" id="modal-finish-book">
     <div class="modal-content">
       <h3>¡Felicitaciones! 🎉</h3>
@@ -808,6 +819,20 @@
       renderSessions();
       renderLibrary();
       updateJournalHeader();
+      updateStreak();
+    }
+
+    function updateStreak() {
+      const indicator = document.getElementById('streak-indicator');
+      if (!indicator) return;
+
+      if (appState.sessions.length === 0) {
+        indicator.textContent = "🔥 0 días seguidos";
+        return;
+      }
+
+      const uniqueDates = [...new Set(appState.sessions.map(s => s.date))];
+      indicator.textContent = `🔥 ${uniqueDates.length} día${uniqueDates.length > 1 ? 's' : ''} leídos`;
     }
 
     function updateJournalHeader() {
@@ -1055,7 +1080,6 @@
       openModal('modal-add-book');
     }
 
-    // BÚSQUEDA INTELIGENTE (DETECTA ISBN O TÍTULO EN ESPAÑOL)
     async function searchBookInfo() {
       const rawQ = document.getElementById('gbooks-query').value.trim();
       if (!rawQ) return;
@@ -1073,7 +1097,6 @@
         let res = await fetch(gUrl);
         let data = await res.json();
 
-        // Si no encontró con filtro español y era título, buscar amplio
         if ((!data.items || data.items.length === 0) && !isISBN) {
           gUrl = `https://www.googleapis.com/books/v1/volumes?q=${queryParam}&maxResults=3`;
           res = await fetch(gUrl);
@@ -1346,6 +1369,42 @@
       saveState();
       renderLibrary();
       showToast(`"${title}" agregado a Por Leer 📚`);
+    }
+
+    // RESPALDO JSON
+    function exportBackup() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+      const dlAnchor = document.createElement('a');
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", `respaldo_lector_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(dlAnchor);
+      dlAnchor.click();
+      dlAnchor.remove();
+      showToast("Copia de seguridad descargada 📥");
+    }
+
+    function importBackup(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed && Array.isArray(parsed.books)) {
+            appState = parsed;
+            saveState();
+            renderAll();
+            updateDnaAndRecommendations();
+            showToast("Respaldo restaurado con éxito ✨");
+          } else {
+            alert("El archivo no tiene el formato correcto.");
+          }
+        } catch(err) {
+          alert("Error al leer el archivo de respaldo.");
+        }
+      };
+      reader.readAsText(file);
     }
 
     function openModal(id) { document.getElementById(id).classList.add('active'); }
