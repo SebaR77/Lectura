@@ -6,8 +6,9 @@
   <title>Mi Lector</title>
   <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Mi Lector">
+  <meta name="theme-color" content="#0d0d0d">
   <link rel="apple-touch-icon" href="https://img.icons8.com/ios-filled/512/d4af37/open-book.png">
 
   <style>
@@ -39,9 +40,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      /* Margen superior holgado para librar completamente la Isla Dinámica */
       padding-top: calc(var(--safe-top) + 48px);
-      /* Margen inferior para librar la cápsula flotante */
       padding-bottom: calc(115px + var(--safe-bottom));
       overflow-x: hidden;
     }
@@ -63,7 +62,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* ISLA FLOTANTE MINECRAFT */
+    /* BARRA INFERIOR / ISLA MINECRAFT */
     .tab-bar-floating {
       position: fixed;
       bottom: calc(14px + var(--safe-bottom));
@@ -71,7 +70,7 @@
       transform: translateX(-50%);
       width: calc(100% - 36px);
       max-width: 360px;
-      background: rgba(22, 22, 22, 0.92);
+      background: rgba(22, 22, 22, 0.94);
       backdrop-filter: blur(25px);
       -webkit-backdrop-filter: blur(25px);
       border: 1px solid rgba(255, 255, 255, 0.12);
@@ -80,7 +79,7 @@
       justify-content: space-around;
       align-items: center;
       padding: 8px 12px;
-      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.75);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8);
       z-index: 100;
     }
 
@@ -101,10 +100,8 @@
       transition: color 0.2s, transform 0.1s;
     }
     .tab-btn:active { transform: scale(0.92); }
-    .tab-btn.active {
-      color: var(--gold);
-    }
-    
+    .tab-btn.active { color: var(--gold); }
+
     .pixel-icon {
       width: 24px;
       height: 24px;
@@ -114,7 +111,7 @@
       justify-content: center;
     }
     .tab-btn:not(.active) .pixel-icon svg {
-      opacity: 0.55;
+      opacity: 0.5;
       filter: grayscale(80%);
     }
 
@@ -198,9 +195,7 @@
     }
 
     /* BARRA DE PROGRESO */
-    .progress-bar-container {
-      margin-top: 16px;
-    }
+    .progress-bar-container { margin-top: 16px; }
     .progress-meta {
       display: flex;
       justify-content: space-between;
@@ -326,34 +321,87 @@
     .rec-title { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .rec-author { font-size: 0.75rem; color: var(--text-muted); }
 
-    /* TOAST MENSAJE */
+    /* GALERÍA / REPISA DE LEÍDOS (NUEVA ESTRUCTURA) */
+    .bookshelf-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .bookshelf-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+    }
+    .bookshelf-thumb {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      border-radius: 8px;
+      background: #222;
+      border: 1px solid var(--card-border);
+      overflow: hidden;
+      position: relative;
+    }
+    .bookshelf-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .bookshelf-badge {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      background: rgba(0, 0, 0, 0.85);
+      color: var(--gold);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid rgba(229, 184, 59, 0.4);
+    }
+    .bookshelf-title {
+      font-size: 0.75rem;
+      margin-top: 6px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    /* TOAST CORREGIDO: OCULTO POR COMPLETO */
     .toast {
       position: fixed;
-      top: calc(var(--safe-top) + 20px);
+      top: calc(var(--safe-top) + 24px);
       left: 50%;
-      transform: translateX(-50%) translateY(-100px);
-      background: rgba(229, 184, 59, 0.95);
+      transform: translateX(-50%);
+      background: rgba(229, 184, 59, 0.96);
       color: #000;
-      padding: 12px 20px;
+      padding: 12px 22px;
       border-radius: 999px;
       font-size: 0.88rem;
       font-weight: 700;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
       z-index: 300;
-      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
       pointer-events: none;
       text-align: center;
       white-space: nowrap;
     }
     .toast.show {
-      transform: translateX(-50%) translateY(0);
+      display: block;
+      opacity: 1;
     }
 
     /* MODALES */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.78);
+      background: rgba(0, 0, 0, 0.82);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       display: none;
@@ -373,9 +421,7 @@
       max-height: 85vh;
       overflow-y: auto;
     }
-    .form-group {
-      margin-bottom: 14px;
-    }
+    .form-group { margin-bottom: 14px; }
     .form-group label {
       display: block;
       font-size: 0.8rem;
@@ -528,20 +574,23 @@
       </div>
     </div>
 
-    <!-- LEÍDOS -->
+    <!-- LEÍDOS & CALIFICADOS (REPISA VISUAL) -->
     <div class="card">
-      <h3>Leídos & Calificados</h3>
-      <div id="finished-list">
-        <p style="font-size: 0.85rem; color: var(--text-muted);">Tus libros terminados aparecerán aquí.</p>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h3 style="margin-bottom: 0;">Leídos & Calificados</h3>
+        <span id="finished-count" style="font-size: 0.8rem; color: var(--text-muted);">0 libros</span>
+      </div>
+      <div id="finished-list" class="bookshelf-grid">
+        <p style="font-size: 0.85rem; color: var(--text-muted); grid-column: span 3;">Tus libros terminados aparecerán aquí.</p>
       </div>
     </div>
 
-    <!-- RESPALDO DE DATOS -->
+    <!-- RESPALDO -->
     <div class="card" style="text-align: center;">
       <h3 style="margin-bottom: 6px;">Copia de Seguridad</h3>
-      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Guarda tus libros, citas y tiempos en un archivo de respaldo.</p>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Guarda tus libros, notas y tiempos en tu iPhone.</p>
       <div style="display: flex; gap: 8px; justify-content: center;">
-        <button class="btn btn-secondary btn-sm" onclick="exportBackup()">📥 Descargar Respaldo</button>
+        <button class="btn btn-secondary btn-sm" onclick="exportBackup()">📥 Descargar</button>
         <label class="btn btn-secondary btn-sm" style="cursor: pointer;">
           📤 Restaurar
           <input type="file" accept=".json" style="display: none;" onchange="importBackup(event)">
@@ -550,22 +599,28 @@
     </div>
   </section>
 
-  <!-- ISLA DE NAVEGACIÓN FLOTANTE (MINECRAFT EDITION) -->
+  <!-- ISLA DE NAVEGACIÓN FLOTANTE (MINECRAFT REAL SPRITES) -->
   <nav class="tab-bar-floating">
+    <!-- Icono 1: Libro auténtico de Minecraft (Cerrado en perspectiva isométrica) -->
     <button class="tab-btn active" onclick="switchTab('reading')">
       <div class="pixel-icon">
         <svg viewBox="0 0 16 16" width="22" height="22">
-          <rect x="2" y="2" width="12" height="12" fill="#8B4513"/>
-          <rect x="1" y="3" width="14" height="10" fill="#6A330B"/>
-          <rect x="4" y="3" width="8" height="9" fill="#FFF8DC"/>
-          <rect x="4" y="4" width="7" height="7" fill="#F5DEB3"/>
-          <rect x="2" y="3" width="2" height="10" fill="#4A2306"/>
-          <rect x="8" y="7" width="2" height="2" fill="#D4AF37"/>
+          <!-- Tapa exterior de cuero -->
+          <rect x="2" y="3" width="10" height="11" fill="#752e1b"/>
+          <rect x="3" y="2" width="10" height="11" fill="#933e24"/>
+          <!-- Páginas crema laterales -->
+          <rect x="12" y="4" width="2" height="8" fill="#eae3bb"/>
+          <rect x="4" y="12" width="8" height="2" fill="#d9cf9e"/>
+          <!-- Costura central y lomo -->
+          <rect x="2" y="3" width="2" height="10" fill="#4d1b0d"/>
+          <!-- Broche metálico / Esquina de protección -->
+          <rect x="8" y="7" width="2" height="2" fill="#b08b32"/>
         </svg>
       </div>
       <span>Lectura</span>
     </button>
 
+    <!-- Icono 2: Papel de Minecraft -->
     <button class="tab-btn" onclick="switchTab('journal')">
       <div class="pixel-icon">
         <svg viewBox="0 0 16 16" width="22" height="22">
@@ -582,6 +637,7 @@
       <span>Bitácora</span>
     </button>
 
+    <!-- Icono 3: Librería de Minecraft -->
     <button class="tab-btn" onclick="switchTab('library')">
       <div class="pixel-icon">
         <svg viewBox="0 0 16 16" width="22" height="22">
@@ -713,16 +769,17 @@
     </div>
   </div>
 
-  <!-- MODAL: DETALLE / EDITAR LIBRO DE LA BIBLIOTECA -->
+  <!-- MODAL: DETALLE / EDITAR LIBRO (DESPLEGABLE ELEGANTE) -->
   <div class="modal-overlay" id="modal-book-detail">
     <div class="modal-content">
       <div style="display: flex; gap: 14px; align-items: center; margin-bottom: 16px;">
-        <div class="cover-box" id="detail-cover-box" style="width: 75px; height: 110px;"></div>
+        <div class="cover-box" id="detail-cover-box" style="width: 80px; height: 118px;"></div>
         <div style="flex: 1; min-width: 0;">
           <h3 id="detail-title" style="margin-bottom: 4px; font-size: 1.05rem;">Título</h3>
           <p id="detail-author" style="font-size: 0.85rem; color: var(--text-muted);">Autor</p>
+          <div id="detail-rating-display" style="color: var(--gold); font-size: 0.9rem; font-weight: 700; margin-top: 4px;"></div>
           <label class="btn btn-secondary btn-sm" style="margin-top: 8px; cursor: pointer; display: inline-flex;">
-            📸 Cambiar Portada
+            📸 Cambiar Foto
             <input type="file" accept="image/*" capture="environment" style="display: none;" onchange="handleCoverUpload(event, 'detail')">
           </label>
         </div>
@@ -734,7 +791,7 @@
           <input type="number" id="detail-rating" class="form-control" min="1" max="10" step="0.5">
         </div>
         <div class="form-group">
-          <label>Reseña / Comentario</label>
+          <label>Tu Comentario / Reseña</label>
           <textarea id="detail-review" class="form-control"></textarea>
         </div>
       </div>
@@ -775,7 +832,6 @@
       loadState();
       renderAll();
       registerSW();
-      updateDnaAndRecommendations();
     });
 
     function registerSW() {
@@ -892,7 +948,7 @@
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
           
-          const compressed = canvas.toDataURL('image/jpeg', 0.82);
+          const compressed = canvas.toDataURL('image/jpeg', 0.75);
 
           if (target === 'active' && appState.activeBook) {
             appState.activeBook.cover = compressed;
@@ -1080,46 +1136,75 @@
       openModal('modal-add-book');
     }
 
+    // BUSCADOR EN CASCADA ULTRA ROBUSTO (GOOGLE BOOKS + OPENLIBRARY)
     async function searchBookInfo() {
       const rawQ = document.getElementById('gbooks-query').value.trim();
       if (!rawQ) return;
 
       const status = document.getElementById('search-status');
-      const cleanQ = rawQ.replace(/[-\s]/g, "");
-      const isISBN = /^\d{9}[\dXx]$\vert{}^\d{13}$/.test(cleanQ);
+      const cleanDigits = rawQ.replace(/[-\s]/g, "");
+      const isISBN = /^\d{9}[\dXx]$\vert{}^\d{13}$/.test(cleanDigits);
 
-      status.textContent = isISBN ? "Buscando ejemplar por ISBN..." : "Buscando libro en español...";
+      status.textContent = isISBN ? "Buscando ISBN..." : "Buscando libro...";
 
+      // 1. INTENTO: GOOGLE BOOKS
       try {
-        let queryParam = isISBN ? `isbn:${cleanQ}` : encodeURIComponent(rawQ.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
-        let gUrl = `https://www.googleapis.com/books/v1/volumes?q=${queryParam}&langRestrict=es&maxResults=3`;
-        
-        let res = await fetch(gUrl);
-        let data = await res.json();
+        let qParam = isISBN ? `isbn:${cleanDigits}` : encodeURIComponent(rawQ.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+        let gRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${qParam}&maxResults=3`);
+        let gData = await gRes.json();
 
-        if ((!data.items || data.items.length === 0) && !isISBN) {
-          gUrl = `https://www.googleapis.com/books/v1/volumes?q=${queryParam}&maxResults=3`;
-          res = await fetch(gUrl);
-          data = await res.json();
-        }
-
-        if (data.items && data.items.length > 0) {
-          const item = data.items[0].volumeInfo;
+        if (gData.items && gData.items.length > 0) {
+          // Priorizar resultado que tenga título
+          let item = gData.items[0].volumeInfo;
           document.getElementById('new-book-title').value = item.title || rawQ;
           document.getElementById('new-book-author').value = item.authors ? item.authors.join(', ') : '';
           document.getElementById('new-book-pages').value = item.pageCount || '';
           
-          if (item.imageLinks && item.imageLinks.thumbnail) {
-            document.getElementById('new-book-cover').value = item.imageLinks.thumbnail.replace('http://', 'https://');
+          if (item.imageLinks && (item.imageLinks.thumbnail || item.imageLinks.smallThumbnail)) {
+            let img = (item.imageLinks.thumbnail || item.imageLinks.smallThumbnail).replace('http://', 'https://');
+            document.getElementById('new-book-cover').value = img;
           }
-          status.textContent = isISBN ? "✓ Ejemplar exacto encontrado por ISBN." : "✓ Información encontrada en español.";
+          status.textContent = "✓ Información encontrada en Google Books.";
           return;
         }
-
-        status.textContent = "No se encontraron datos automáticos. Puedes ingresarlos a mano.";
-      } catch (err) {
-        status.textContent = "Error al conectar al buscador. Ingresa los datos manual.";
+      } catch (e) {
+        // Silencio para saltar a OpenLibrary
       }
+
+      // 2. INTENTO: OPENLIBRARY
+      try {
+        status.textContent = "Consultando base OpenLibrary...";
+        let olUrl = isISBN 
+          ? `https://openlibrary.org/api/books?bibkeys=ISBN:${cleanDigits}&format=json&jscmd=data`
+          : `https://openlibrary.org/search.json?q=${encodeURIComponent(rawQ)}&limit=1`;
+        
+        let olRes = await fetch(olUrl);
+        let olData = await olRes.json();
+
+        if (isISBN && olData[`ISBN:${cleanDigits}`]) {
+          let b = olData[`ISBN:${cleanDigits}`];
+          document.getElementById('new-book-title').value = b.title || rawQ;
+          document.getElementById('new-book-author').value = b.authors ? b.authors.map(a => a.name).join(', ') : '';
+          document.getElementById('new-book-pages').value = b.number_of_pages || '';
+          if (b.cover && b.cover.medium) {
+            document.getElementById('new-book-cover').value = b.cover.medium;
+          }
+          status.textContent = "✓ Ejemplar encontrado por ISBN en OpenLibrary.";
+          return;
+        } else if (!isISBN && olData.docs && olData.docs.length > 0) {
+          let doc = olData.docs[0];
+          document.getElementById('new-book-title').value = doc.title || rawQ;
+          document.getElementById('new-book-author').value = doc.author_name ? doc.author_name.join(', ') : '';
+          document.getElementById('new-book-pages').value = doc.number_of_pages_median || '';
+          if (doc.cover_i) {
+            document.getElementById('new-book-cover').value = `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`;
+          }
+          status.textContent = "✓ Información encontrada en OpenLibrary.";
+          return;
+        }
+      } catch (err) {}
+
+      status.textContent = "No se encontraron datos automáticos. Puedes ingresarlos a mano abajo.";
     }
 
     function saveNewBook() {
@@ -1151,14 +1236,12 @@
         closeModal('modal-add-book');
         saveState();
         renderAll();
-        updateDnaAndRecommendations();
         switchTab('reading');
       } else {
         appState.books.push(newB);
         closeModal('modal-add-book');
         saveState();
         renderAll();
-        updateDnaAndRecommendations();
         switchTab('library');
       }
     }
@@ -1188,13 +1271,13 @@
       closeModal('modal-finish-book');
       saveState();
       renderAll();
-      updateDnaAndRecommendations();
       switchTab('library');
     }
 
     function renderLibrary() {
       const pendingBox = document.getElementById('pending-list');
       const finishedBox = document.getElementById('finished-list');
+      const finishedCount = document.getElementById('finished-count');
 
       const pendings = appState.books.filter(b => b.status === 'pending');
       const finisheds = appState.books.filter(b => b.status === 'finished');
@@ -1214,17 +1297,19 @@
         `).join('');
       }
 
+      finishedCount.textContent = `${finisheds.length} libro${finisheds.length === 1 ? '' : 's'}`;
+
       if (finisheds.length === 0) {
-        finishedBox.innerHTML = `<p style="font-size: 0.85rem; color: var(--text-muted);">Tus libros terminados aparecerán aquí.</p>`;
+        finishedBox.innerHTML = `<p style="font-size: 0.85rem; color: var(--text-muted); grid-column: span 3;">Tus libros terminados aparecerán aquí.</p>`;
       } else {
+        // REPISA VISUAL: Portadas en cuadrícula con insignia de nota
         finishedBox.innerHTML = finisheds.map(b => `
-          <div class="rec-card" onclick="openBookDetailModal(${b.id})">
-            ${b.cover ? `<img src="${b.cover}">` : ''}
-            <div class="rec-info">
-              <div class="rec-title">${b.title}</div>
-              <div class="rec-author">${b.author} — <b style="color:var(--gold);">★ ${b.rating}/10</b></div>
-              ${b.review ? `<div style="font-size:0.75rem; color:#aaa; font-style:italic; margin-top:2px;">"${b.review}"</div>` : ''}
+          <div class="bookshelf-item" onclick="openBookDetailModal(${b.id})">
+            <div class="bookshelf-thumb">
+              ${b.cover ? `<img src="${b.cover}">` : `<div style="padding:10px; font-size:0.7rem; color:#888; text-align:center;">${b.title}</div>`}
+              <div class="bookshelf-badge">★ ${b.rating}</div>
             </div>
+            <div class="bookshelf-title">${b.title}</div>
           </div>
         `).join('');
       }
@@ -1243,12 +1328,16 @@
       coverBox.innerHTML = b.cover ? `<img src="${b.cover}">` : `<span class="cover-placeholder">Sin Portada</span>`;
 
       const finFields = document.getElementById('detail-finished-fields');
+      const ratingDisp = document.getElementById('detail-rating-display');
+
       if (b.status === 'finished') {
         finFields.style.display = 'block';
+        ratingDisp.textContent = `★ ${b.rating}/10 ${b.finishedAt ? '• Leído el ' + b.finishedAt : ''}`;
         document.getElementById('detail-rating').value = b.rating || '7';
         document.getElementById('detail-review').value = b.review || '';
       } else {
         finFields.style.display = 'none';
+        ratingDisp.textContent = 'En lista de espera';
       }
 
       openModal('modal-book-detail');
@@ -1284,7 +1373,6 @@
         appState.activeBook.status = 'reading';
         saveState();
         renderAll();
-        updateDnaAndRecommendations();
         switchTab('reading');
       }
     }
@@ -1371,7 +1459,6 @@
       showToast(`"${title}" agregado a Por Leer 📚`);
     }
 
-    // RESPALDO JSON
     function exportBackup() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
       const dlAnchor = document.createElement('a');
@@ -1395,7 +1482,6 @@
             appState = parsed;
             saveState();
             renderAll();
-            updateDnaAndRecommendations();
             showToast("Respaldo restaurado con éxito ✨");
           } else {
             alert("El archivo no tiene el formato correcto.");
