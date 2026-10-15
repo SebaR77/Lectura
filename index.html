@@ -826,7 +826,7 @@
     </div>
   </div>
 
-  <!-- MODAL: REGISTRAR SESIÓN HISTÓRICA / ANTERIOR -->
+  <!-- MODAL: REGISTRAR SESIÓN HISTÓRICA -->
   <div class="modal-overlay" id="modal-add-historical">
     <div class="modal-content">
       <h3>Añadir Sesión Anterior 📅</h3>
@@ -1019,7 +1019,9 @@
 
     function registerSW() {
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
+        navigator.serviceWorker.register('./sw.js').then((reg) => {
+          reg.update(); // Fuerza al navegador a verificar si hay una versión nueva de sw.js
+        }).catch(() => {});
       }
     }
 
@@ -1526,10 +1528,11 @@
       document.getElementById('new-book-pages').value = '';
       document.getElementById('new-book-start-page').value = '0';
       document.getElementById('new-book-cover').value = '';
+      document.getElementById('new-book-category').value = 'Desarrollo Personal & Hábitos';
       openModal('modal-add-book');
     }
 
-    /* BUSCADOR COMPLETAMENTE RECONSTRUIDO Y ROBUSTO */
+    /* BUSCADOR ROBUSTO */
     async function searchBookInfo() {
       const inputEl = document.getElementById('gbooks-query');
       const rawQ = inputEl.value.trim();
@@ -1540,7 +1543,6 @@
       resultsBox.style.display = 'none';
       resultsBox.innerHTML = '';
 
-      // Limpieza exhaustiva de ISBN: quita "ISBN:", espacios y guiones, conservando dígitos y 'X'
       const cleanDigits = rawQ.replace(/^isbn\s*:?\s*/i, "").replace(/[-\s]/g, "");
       const isISBN = /^(?:\d{9}[\dXx]|\d{13})$/.test(cleanDigits);
 
@@ -1548,7 +1550,7 @@
 
       let results = [];
 
-      // 1. Google Books (Construcción limpia sin parámetros que bloqueen)
+      // 1. Google Books
       try {
         const queryTerm = isISBN ? `isbn:${cleanDigits}` : rawQ;
         const gUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(queryTerm)}&maxResults=5`;
@@ -1566,16 +1568,15 @@
                 author: inf.authors ? inf.authors.join(', ') : 'Autor desconocido',
                 pages: inf.pageCount || '',
                 cover: thumb ? thumb.replace('http://', 'https://') : '',
-                year: inf.publishedDate ? inf.publishedDate.slice(0, 4) : ''
+                year: inf.publishedDate ? inf.publishedDate.slice(0, 4) : '',
+                categories: inf.categories || []
               };
             });
           }
         }
-      } catch (err) {
-        console.warn("Fallo de conexión temporal con Google Books:", err);
-      }
+      } catch (err) {}
 
-      // 2. OpenLibrary (Respaldo garantizado si Google Books no entregó resultados)
+      // 2. OpenLibrary (respaldo)
       if (results.length === 0) {
         try {
           status.textContent = "Consultando catálogo de respaldo (OpenLibrary)...";
@@ -1593,7 +1594,8 @@
                   author: b.authors ? b.authors.map(a => a.name).join(', ') : 'Autor desconocido',
                   pages: b.number_of_pages || '',
                   cover: coverUrl,
-                  year: b.publish_date ? b.publish_date.slice(-4) : ''
+                  year: b.publish_date ? b.publish_date.slice(-4) : '',
+                  categories: []
                 });
               }
             }
@@ -1609,31 +1611,27 @@
                     author: doc.author_name ? doc.author_name.join(', ') : 'Autor desconocido',
                     pages: doc.number_of_pages_median || '',
                     cover: doc.cover_i ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg` : '',
-                    year: doc.first_publish_year ? String(doc.first_publish_year) : ''
+                    year: doc.first_publish_year ? String(doc.first_publish_year) : '',
+                    categories: doc.subject || []
                   };
                 });
               }
             }
           }
-        } catch (err) {
-          console.warn("Fallo en OpenLibrary:", err);
-        }
+        } catch (err) {}
       }
 
-      // Procesamiento de los resultados obtenidos
       if (results.length === 0) {
         status.textContent = "No se encontraron datos automáticos. Puedes ingresarlos a mano abajo.";
         return;
       }
 
-      // Si es un ISBN exacto y hay 1 resultado, autocompletar directo
       if (isISBN && results.length === 1) {
         selectSearchResult(results[0]);
         status.textContent = "✓ Ejemplar encontrado por ISBN.";
         return;
       }
 
-      // Mostrar listado de obras encontradas
       currentSearchResults = results;
       status.textContent = "Selecciona la edición que tienes en mano:";
       resultsBox.style.display = 'block';
@@ -1656,11 +1654,46 @@
       }
     }
 
+    /* DETECCIÓN AUTOMÁTICA DE CATEGORÍA */
+    function guessCategory(title, cats) {
+      const text = (title + " " + (cats ? cats.join(" ") : "")).toLowerCase();
+
+      if (text.includes("auschwitz") || text.includes("holocausto") || text.includes("memoria") || text.includes("biograf") || text.includes("testimonio") || text.includes("diario de")) {
+        return "Biografía, Memorias & Testimonio";
+      }
+      if (text.includes("historia") || text.includes("guerra") || text.includes("revolución") || text.includes("imperio")) {
+        return "Historia & Memoria Histórica";
+      }
+      if (text.includes("hábito") || text.includes("habitos") || text.includes("productividad") || text.includes("éxito") || text.includes("disciplina") || text.includes("superación")) {
+        return "Desarrollo Personal & Hábitos";
+      }
+      if (text.includes("psicolog") || text.includes("mente") || text.includes("conducta") || text.includes("emocion")) {
+        return "Psicología & Comportamiento";
+      }
+      if (text.includes("filosof") || text.includes("pensamiento") || text.includes("ética") || text.includes("moral")) {
+        return "Filosofía & Pensamiento";
+      }
+      if (text.includes("terror") || text.includes("misterio") || text.includes("crimen") || text.includes("suspenso") || text.includes("poe")) {
+        return "Terror, Suspenso & Misterio";
+      }
+      if (text.includes("clásico") || text.includes("clasico") || text.includes("quijote") || text.includes("dostoyevski") || text.includes("orwell")) {
+        return "Clásicos de la Literatura";
+      }
+      return "Novela & Ficción Contemporánea";
+    }
+
     function selectSearchResult(item) {
       document.getElementById('new-book-title').value = item.title;
       document.getElementById('new-book-author').value = item.author;
       if (item.pages) document.getElementById('new-book-pages').value = item.pages;
       if (item.cover) document.getElementById('new-book-cover').value = item.cover;
+
+      // Auto-asignar categoría sugerida
+      const detectedCat = guessCategory(item.title, item.categories);
+      const catSelect = document.getElementById('new-book-category');
+      if (catSelect) {
+        catSelect.value = detectedCat;
+      }
     }
 
     function saveNewBook() {
