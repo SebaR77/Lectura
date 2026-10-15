@@ -207,7 +207,7 @@
       width: 100%;
       height: 8px;
       background: #242424;
-      border-radius: 99px;
+      border-radius: 999px;
       overflow: hidden;
     }
     .progress-fill {
@@ -616,7 +616,6 @@
       </div>
     </div>
 
-    <!-- BOTONES DE ACCIÓN EN BITÁCORA -->
     <div style="display: flex; gap: 8px; margin-bottom: 16px;">
       <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="openAddHistoricalSessionModal()">📅 + Sesión Anterior</button>
       <button class="btn btn-gold btn-sm" style="flex: 1;" onclick="openAddQuoteModal()">✍️ + Frase</button>
@@ -629,7 +628,6 @@
       </div>
     </div>
 
-    <!-- HISTORIAL POR LIBRO -->
     <div class="card">
       <h3>Historial por Libro</h3>
       <div id="sessions-grouped-list">
@@ -645,7 +643,6 @@
       <button class="btn btn-gold btn-sm" onclick="openAddBookModal('active')">+ Libro Activo</button>
     </div>
 
-    <!-- ADN DEL LECTOR -->
     <div class="card">
       <h3>🧬 Tu ADN de Lector</h3>
       <p id="dna-description" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">
@@ -654,7 +651,6 @@
       <div id="dna-tags"></div>
     </div>
 
-    <!-- RECOMENDACIONES AFINES -->
     <div class="card">
       <h3>💡 Quizás te interese leer</h3>
       <div id="recommendations-box">
@@ -662,13 +658,11 @@
       </div>
     </div>
 
-    <!-- EN PAUSA -->
     <div class="card" id="card-paused-books" style="display: none;">
       <h3 style="margin-bottom: 10px;">En Pausa</h3>
       <div id="paused-list"></div>
     </div>
 
-    <!-- PENDIENTES (POR LEER) -->
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <h3 style="margin-bottom: 0;">Por Leer (Pendientes)</h3>
@@ -679,7 +673,6 @@
       </div>
     </div>
 
-    <!-- LEÍDOS & CALIFICADOS -->
     <div class="card">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
         <h3 style="margin-bottom: 0;">Leídos & Calificados</h3>
@@ -690,7 +683,6 @@
       </div>
     </div>
 
-    <!-- RESPALDO -->
     <div class="card" style="text-align: center;">
       <h3 style="margin-bottom: 6px;">Copia de Seguridad</h3>
       <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">Guarda tus libros, notas y tiempos en tu iPhone.</p>
@@ -765,7 +757,7 @@
       <div class="form-group">
         <label>Buscar por Título, Autor o ISBN</label>
         <div style="display: flex; gap: 8px;">
-          <input type="text" id="gbooks-query" class="form-control" placeholder="Ej: George R. R. Martin o 9788411003551">
+          <input type="text" id="gbooks-query" class="form-control" placeholder="Ej: Hábitos atómicos o 9789563251951">
           <button class="btn btn-secondary btn-sm" id="btn-search-book" onclick="searchBookInfo()">Buscar</button>
         </div>
         <div id="search-status" style="font-size: 0.75rem; color: var(--gold); margin-top: 4px;"></div>
@@ -1020,7 +1012,6 @@
       registerSW();
       updateDnaAndRecommendations();
 
-      // Inicializar fecha de hoy en el modal histórico
       const todayStr = new Date().toISOString().slice(0, 10);
       const histDate = document.getElementById('hist-session-date');
       if (histDate) histDate.value = todayStr;
@@ -1079,10 +1070,8 @@
       updateStreak();
     }
 
-    /* RITMO PROPIO POR LIBRO Y ESTIMACIÓN RETROACTIVA */
     function getBookReadingPace(bookId) {
       if (!appState.sessions) return null;
-      // Solo consideramos sesiones cronometradas reales con páginas y minutos
       const timed = appState.sessions.filter(s => s.bookId === bookId && s.isTimed && s.minutes > 0 && s.pagesRead > 0);
       if (timed.length === 0) return null;
 
@@ -1232,7 +1221,6 @@
       closeModal('modal-cover-changer');
     }
 
-    /* CRONÓMETRO FIABLE CON DATE.NOW() */
     function getElapsedMs() {
       let ms = appState.timerState.accumulatedMs || 0;
       if (appState.timerState.isRunning && appState.timerState.startTime) {
@@ -1349,7 +1337,6 @@
       }
     }
 
-    /* REGISTRO DE SESIÓN HISTÓRICA / MANUAL */
     function openAddHistoricalSessionModal() {
       if (!appState.activeBook) {
         alert("Primero selecciona o registra un libro activo en curso.");
@@ -1371,10 +1358,8 @@
         return;
       }
 
-      // Convertir fecha YYYY-MM-DD a DD/MM/AAAA
       const [y, m, d] = dateVal.split('-');
       const formattedDate = `${parseInt(d, 10)}/${parseInt(m, 10)}/${y}`;
-
       const isTimed = (mins !== null && !isNaN(mins) && mins > 0);
 
       appState.sessions.unshift({
@@ -1386,7 +1371,6 @@
         isTimed: isTimed
       });
 
-      // Sumar al avance actual del libro si corresponde
       appState.activeBook.currentPage = Math.min(appState.activeBook.totalPages, appState.activeBook.currentPage + pages);
 
       closeModal('modal-add-historical');
@@ -1481,7 +1465,6 @@
       `).join('');
     }
 
-    /* HISTORIAL AGRUPADO CON DIFERENCIACIÓN REAL VS ESTIMADO */
     function renderGroupedSessions() {
       const container = document.getElementById('sessions-grouped-list');
       if (!appState.sessions || appState.sessions.length === 0) {
@@ -1546,9 +1529,10 @@
       openModal('modal-add-book');
     }
 
-    /* BÚSQUEDA INTELIGENTE CON LISTADO DE OBRAS DESTACADAS */
+    /* BUSCADOR COMPLETAMENTE RECONSTRUIDO Y ROBUSTO */
     async function searchBookInfo() {
-      const rawQ = document.getElementById('gbooks-query').value.trim();
+      const inputEl = document.getElementById('gbooks-query');
+      const rawQ = inputEl.value.trim();
       if (!rawQ) return;
 
       const status = document.getElementById('search-status');
@@ -1556,74 +1540,87 @@
       resultsBox.style.display = 'none';
       resultsBox.innerHTML = '';
 
-      // Limpieza exhaustiva de ISBN (remover "ISBN:", guiones, espacios y conservar X final)
-      let clean = rawQ.replace(/^isbn\s*:?\s*/i, "").replace(/[-\s]/g, "");
-      const isISBN = /^(?:\d{9}[\dXx]|\d{13})$/.test(clean);
+      // Limpieza exhaustiva de ISBN: quita "ISBN:", espacios y guiones, conservando dígitos y 'X'
+      const cleanDigits = rawQ.replace(/^isbn\s*:?\s*/i, "").replace(/[-\s]/g, "");
+      const isISBN = /^(?:\d{9}[\dXx]|\d{13})$/.test(cleanDigits);
 
-      status.textContent = isISBN ? "Validando ejemplar por ISBN..." : "Buscando obras destacadas en español...";
+      status.textContent = isISBN ? "Consultando catálogo por ISBN..." : "Buscando en catálogos...";
 
       let results = [];
 
-      // 1. Google Books (con prioridad en español)
+      // 1. Google Books (Construcción limpia sin parámetros que bloqueen)
       try {
-        let qParam = isISBN ? clean : encodeURIComponent(rawQ.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
-        let gRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${qParam}&langRestrict=es&maxResults=4`);
-        let gData = await gRes.json();
-
-        if (gData.items && gData.items.length > 0) {
-          results = gData.items.map(item => {
-            const inf = item.volumeInfo;
-            return {
-              title: inf.title || rawQ,
-              author: inf.authors ? inf.authors.join(', ') : 'Autor desconocido',
-              pages: inf.pageCount || '',
-              cover: inf.imageLinks ? (inf.imageLinks.thumbnail || inf.imageLinks.smallThumbnail).replace('http://', 'https://') : '',
-              year: inf.publishedDate ? inf.publishedDate.slice(0, 4) : ''
-            };
-          });
-        }
-      } catch (e) {}
-
-      // Si no hubo resultados en español o es búsqueda amplia, intentar sin langRestrict
-      if (results.length === 0 && !isISBN) {
-        try {
-          let gRes2 = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(rawQ)}&maxResults=4`);
-          let gData2 = await gRes2.json();
-          if (gData2.items && gData2.items.length > 0) {
-            results = gData2.items.map(item => {
-              const inf = item.volumeInfo;
+        const queryTerm = isISBN ? `isbn:${cleanDigits}` : rawQ;
+        const gUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(queryTerm)}&maxResults=5`;
+        
+        const res = await fetch(gUrl);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.items && data.items.length > 0) {
+            results = data.items.map(item => {
+              const inf = item.volumeInfo || {};
+              const imgObj = inf.imageLinks || {};
+              const thumb = imgObj.thumbnail || imgObj.smallThumbnail || '';
               return {
                 title: inf.title || rawQ,
                 author: inf.authors ? inf.authors.join(', ') : 'Autor desconocido',
                 pages: inf.pageCount || '',
-                cover: inf.imageLinks ? (inf.imageLinks.thumbnail || inf.imageLinks.smallThumbnail).replace('http://', 'https://') : '',
+                cover: thumb ? thumb.replace('http://', 'https://') : '',
                 year: inf.publishedDate ? inf.publishedDate.slice(0, 4) : ''
               };
             });
           }
-        } catch(e) {}
+        }
+      } catch (err) {
+        console.warn("Fallo de conexión temporal con Google Books:", err);
       }
 
-      // 2. OpenLibrary (respaldo por ISBN si Google falló)
-      if (results.length === 0 && isISBN) {
+      // 2. OpenLibrary (Respaldo garantizado si Google Books no entregó resultados)
+      if (results.length === 0) {
         try {
-          let olUrl = `https://openlibrary.org/api/books?bibkeys=ISBN:${clean}&format=json&jscmd=data`;
-          let olRes = await fetch(olUrl);
-          let olData = await olRes.json();
-
-          if (olData[`ISBN:${clean}`]) {
-            let b = olData[`ISBN:${clean}`];
-            results.push({
-              title: b.title || rawQ,
-              author: b.authors ? b.authors.map(a => a.name).join(', ') : 'Autor',
-              pages: b.number_of_pages || '',
-              cover: b.cover && (b.cover.medium || b.cover.large) ? (b.cover.medium || b.cover.large) : '',
-              year: b.publish_date ? b.publish_date.slice(-4) : ''
-            });
+          status.textContent = "Consultando catálogo de respaldo (OpenLibrary)...";
+          let olUrl = '';
+          if (isISBN) {
+            olUrl = `https://openlibrary.org/api/books?bibkeys=ISBN:${cleanDigits}&format=json&jscmd=data`;
+            const olRes = await fetch(olUrl);
+            if (olRes.ok) {
+              const olData = await olRes.json();
+              const b = olData[`ISBN:${cleanDigits}`];
+              if (b) {
+                const coverUrl = b.cover ? (b.cover.medium || b.cover.large || '') : '';
+                results.push({
+                  title: b.title || rawQ,
+                  author: b.authors ? b.authors.map(a => a.name).join(', ') : 'Autor desconocido',
+                  pages: b.number_of_pages || '',
+                  cover: coverUrl,
+                  year: b.publish_date ? b.publish_date.slice(-4) : ''
+                });
+              }
+            }
+          } else {
+            olUrl = `https://openlibrary.org/search.json?q=${encodeURIComponent(rawQ)}&limit=5`;
+            const olRes = await fetch(olUrl);
+            if (olRes.ok) {
+              const olData = await olRes.json();
+              if (olData && olData.docs && olData.docs.length > 0) {
+                results = olData.docs.slice(0, 5).map(doc => {
+                  return {
+                    title: doc.title || rawQ,
+                    author: doc.author_name ? doc.author_name.join(', ') : 'Autor desconocido',
+                    pages: doc.number_of_pages_median || '',
+                    cover: doc.cover_i ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg` : '',
+                    year: doc.first_publish_year ? String(doc.first_publish_year) : ''
+                  };
+                });
+              }
+            }
           }
-        } catch(e) {}
+        } catch (err) {
+          console.warn("Fallo en OpenLibrary:", err);
+        }
       }
 
+      // Procesamiento de los resultados obtenidos
       if (results.length === 0) {
         status.textContent = "No se encontraron datos automáticos. Puedes ingresarlos a mano abajo.";
         return;
@@ -1632,13 +1629,13 @@
       // Si es un ISBN exacto y hay 1 resultado, autocompletar directo
       if (isISBN && results.length === 1) {
         selectSearchResult(results[0]);
-        status.textContent = "✓ Ejemplar verificado por ISBN.";
+        status.textContent = "✓ Ejemplar encontrado por ISBN.";
         return;
       }
 
-      // Desplegar lista de obras reconocidas para elegir
+      // Mostrar listado de obras encontradas
       currentSearchResults = results;
-      status.textContent = "Selecciona la obra que tienes en mano:";
+      status.textContent = "Selecciona la edición que tienes en mano:";
       resultsBox.style.display = 'block';
       resultsBox.innerHTML = results.map((r, idx) => `
         <div class="search-result-item" onclick="pickSearchResult(${idx})">
@@ -1834,7 +1831,6 @@
       const coverBox = document.getElementById('detail-cover-box');
       coverBox.innerHTML = b.cover ? `<img src="${escapeHTML(b.cover)}">` : `<span class="cover-placeholder">Sin Portada</span>`;
 
-      // Métricas vinculadas por ID único y ritmo propio
       const bSessions = appState.sessions.filter(s => s.bookId === b.id && s.pagesRead > 0);
       const pace = getBookReadingPace(b.id);
 
@@ -1906,7 +1902,6 @@
       closeModal('modal-book-detail');
     }
 
-    /* RECOMENDACIONES AFINES */
     let currentRecommendationsList = [];
 
     function updateDnaAndRecommendations() {
@@ -1945,16 +1940,18 @@
       else if (topCat.includes("Novela")) qTopic = "novela contemporanea";
       else if (topCat.includes("Psicología")) qTopic = "psicologia comportamiento";
 
-      fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(qTopic)}&langRestrict=es&maxResults=3`)
+      fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(qTopic)}&maxResults=3`)
         .then(r => r.json())
         .then(data => {
-          if (data.items && data.items.length > 0) {
+          if (data && data.items && data.items.length > 0) {
             const apiRecs = data.items.map(item => {
-              const inf = item.volumeInfo;
+              const inf = item.volumeInfo || {};
+              const imgObj = inf.imageLinks || {};
+              const thumb = imgObj.thumbnail || imgObj.smallThumbnail || '';
               return {
                 title: inf.title || 'Libro',
-                author: inf.authors ? inf.authors[0] : 'Autor',
-                cover: inf.imageLinks ? (inf.imageLinks.thumbnail || inf.imageLinks.smallThumbnail).replace('http://', 'https://') : '',
+                author: inf.authors ? inf.authors[0] : 'Autor desconocido',
+                cover: thumb ? thumb.replace('http://', 'https://') : '',
                 pages: inf.pageCount || 240
               };
             });
