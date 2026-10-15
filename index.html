@@ -779,18 +779,27 @@
         </div>
         <div class="form-group">
           <label>¿En qué pág vas?</label>
-          <input type="number" id="new-book-start-page" class="form-control" placeholder="0" min="0" value="0">
+          <input type="number" id="new-book-start-page" class="form-control" placeholder="0" min="0" value="0" oninput="toggleAutoSessionOption()">
         </div>
       </div>
+
+      <!-- CHECKBOX PARA AUTO-CREAR SESIÓN INICIAL SI VAS EN PÁG > 0 -->
+      <div class="form-group" id="auto-session-box" style="display: none; background: #141414; border: 1px solid var(--card-border); padding: 10px 12px; border-radius: 12px; margin-top: -4px;">
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text); cursor: pointer; margin-bottom: 0;">
+          <input type="checkbox" id="auto-create-session" checked style="accent-color: var(--gold); width: 16px; height: 16px;">
+          <span>Registrar estas páginas como sesión inicial en tu historial</span>
+        </label>
+      </div>
+
       <div class="form-group">
         <label>Género / Categoría *</label>
         <select id="new-book-category" class="form-control">
           <option value="Desarrollo Personal & Hábitos">Desarrollo Personal & Hábitos</option>
-          <option value="Historia & Memoria Histórica">Historia & Memoria Histórica</option>
-          <option value="Novela & Ficción Contemporánea">Novela & Ficción Contemporánea</option>
-          <option value="Clásicos de la Literatura">Clásicos de la Literatura</option>
-          <option value="Psicología & Comportamiento">Psicología & Comportamiento</option>
           <option value="Biografía, Memorias & Testimonio">Biografía, Memorias & Testimonio</option>
+          <option value="Psicología & Comportamiento">Psicología & Comportamiento</option>
+          <option value="Historia & Memoria Histórica">Historia & Memoria Histórica</option>
+          <option value="Clásicos de la Literatura">Clásicos de la Literatura</option>
+          <option value="Novela & Ficción Contemporánea">Novela & Ficción Contemporánea</option>
           <option value="Filosofía & Pensamiento">Filosofía & Pensamiento</option>
           <option value="Crónica, Política & Sociedad">Crónica, Política & Sociedad</option>
           <option value="Ciencia & Divulgación">Ciencia & Divulgación</option>
@@ -977,36 +986,37 @@
     let coverChangeTarget = 'active';
     let currentSearchResults = [];
 
+    /* CATÁLOGO DE RESPALDO CON AFINIDAD TEMÁTICA ESTRICTA */
     const BACKUP_RECS = {
-      "Historia & Memoria Histórica": [
+      "Biografía, Memorias & Testimonio": [
         { title: "El hombre en busca de sentido", author: "Viktor Frankl", cover: "https://covers.openlibrary.org/b/id/12833521-M.jpg", pages: 168 },
         { title: "El chico que siguió a su padre hasta Auschwitz", author: "Jeremy Dronfield", cover: "https://covers.openlibrary.org/b/id/9324546-M.jpg", pages: 416 },
         { title: "La bailarina de Auschwitz", author: "Edith Eger", cover: "https://covers.openlibrary.org/b/id/8753215-M.jpg", pages: 416 }
+      ],
+      "Psicología & Comportamiento": [
+        { title: "Cómo hacer que te pasen cosas buenas", author: "Marian Rojas Estapé", cover: "https://covers.openlibrary.org/b/id/12886416-M.jpg", pages: 232 },
+        { title: "Pensar rápido, pensar despacio", author: "Daniel Kahneman", cover: "https://covers.openlibrary.org/b/id/7884841-M.jpg", pages: 672 },
+        { title: "El arte de no amargarse la vida", author: "Rafael Santandreu", cover: "https://covers.openlibrary.org/b/id/8231856-M.jpg", pages: 240 }
       ],
       "Desarrollo Personal & Hábitos": [
         { title: "Hábitos Atómicos", author: "James Clear", cover: "https://covers.openlibrary.org/b/id/12886416-M.jpg", pages: 336 },
         { title: "No Me Puedes Lastimar", author: "David Goggins", cover: "https://covers.openlibrary.org/b/id/10398321-M.jpg", pages: 364 },
         { title: "El poder de los hábitos", author: "Charles Duhigg", cover: "https://covers.openlibrary.org/b/id/8314120-M.jpg", pages: 400 }
       ],
+      "Clásicos de la Literatura": [
+        { title: "1984", author: "George Orwell", cover: "https://covers.openlibrary.org/b/id/7222246-M.jpg", pages: 328 },
+        { title: "Rebelión en la granja", author: "George Orwell", cover: "https://covers.openlibrary.org/b/id/12645114-M.jpg", pages: 144 },
+        { title: "Crimen y castigo", author: "Fiódor Dostoyevski", cover: "https://covers.openlibrary.org/b/id/8775432-M.jpg", pages: 560 }
+      ],
+      "Historia & Memoria Histórica": [
+        { title: "Si esto es un hombre", author: "Primo Levi", cover: "https://covers.openlibrary.org/b/id/8314120-M.jpg", pages: 220 },
+        { title: "Los que susurran: La vida privada en la Rusia de Stalin", author: "Orlando Figes", cover: "https://covers.openlibrary.org/b/id/9324546-M.jpg", pages: 890 },
+        { title: "El hombre que nunca escapó de Auschwitz", author: "Gabriel Salinger", cover: "https://covers.openlibrary.org/b/id/12833521-M.jpg", pages: 280 }
+      ],
       "Novela & Ficción Contemporánea": [
         { title: "Cadáver exquisito", author: "Agustina Bazterrica", cover: "https://covers.openlibrary.org/b/id/10512140-M.jpg", pages: 256 },
-        { title: "Rebelión en la granja", author: "George Orwell", cover: "https://covers.openlibrary.org/b/id/12645114-M.jpg", pages: 144 },
-        { title: "1984", author: "George Orwell", cover: "https://covers.openlibrary.org/b/id/7222246-M.jpg", pages: 328 }
-      ],
-      "Clásicos de la Literatura": [
-        { title: "Narraciones Extraordinarias", author: "Edgar Allan Poe", cover: "https://covers.openlibrary.org/b/id/8231996-M.jpg", pages: 280 },
-        { title: "Crimen y castigo", author: "Fiódor Dostoyevski", cover: "https://covers.openlibrary.org/b/id/8775432-M.jpg", pages: 560 },
+        { title: "Fahrenheit 451", author: "Ray Bradbury", cover: "https://covers.openlibrary.org/b/id/8228691-M.jpg", pages: 192 },
         { title: "El extranjero", author: "Albert Camus", cover: "https://covers.openlibrary.org/b/id/8228691-M.jpg", pages: 160 }
-      ],
-      "Psicología & Comportamiento": [
-        { title: "Pensar rápido, pensar despacio", author: "Daniel Kahneman", cover: "https://covers.openlibrary.org/b/id/7884841-M.jpg", pages: 672 },
-        { title: "Cuando nada es suficiente", author: "Ellen Hendriksen", cover: "https://covers.openlibrary.org/b/id/10291456-M.jpg", pages: 320 },
-        { title: "Influencia", author: "Robert Cialdini", cover: "https://covers.openlibrary.org/b/id/8231856-M.jpg", pages: 304 }
-      ],
-      "Biografía, Memorias & Testimonio": [
-        { title: "Si esto es un hombre", author: "Primo Levi", cover: "https://covers.openlibrary.org/b/id/8314120-M.jpg", pages: 220 },
-        { title: "Elegí Vivir", author: "Daniela García", cover: "https://covers.openlibrary.org/b/id/12833521-M.jpg", pages: 224 },
-        { title: "El hombre que nunca escapó de Auschwitz", author: "Gabriel Salinger", cover: "https://covers.openlibrary.org/b/id/9324546-M.jpg", pages: 280 }
       ]
     };
 
@@ -1075,6 +1085,16 @@
       renderLibrary();
       updateJournalHeader();
       updateStreak();
+    }
+
+    function toggleAutoSessionOption() {
+      const startP = parseInt(document.getElementById('new-book-start-page').value, 10) || 0;
+      const box = document.getElementById('auto-session-box');
+      if (startP > 0) {
+        box.style.display = 'block';
+      } else {
+        box.style.display = 'none';
+      }
     }
 
     function getBookReadingPace(bookId) {
@@ -1532,12 +1552,13 @@
       document.getElementById('new-book-author').value = '';
       document.getElementById('new-book-pages').value = '';
       document.getElementById('new-book-start-page').value = '0';
+      document.getElementById('auto-session-box').style.display = 'none';
+      document.getElementById('auto-create-session').checked = true;
       document.getElementById('new-book-cover').value = '';
       document.getElementById('new-book-category').value = 'Desarrollo Personal & Hábitos';
       openModal('modal-add-book');
     }
 
-    /* BUSCADOR CON ASIGNACIÓN BILINGÜE Y EXTRACTO DE METADATOS */
     async function searchBookInfo() {
       const inputEl = document.getElementById('gbooks-query');
       const rawQ = inputEl.value.trim();
@@ -1555,7 +1576,6 @@
 
       let results = [];
 
-      // 1. Google Books
       try {
         const queryTerm = isISBN ? `isbn:${cleanDigits}` : rawQ;
         const gUrl = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(queryTerm)}&maxResults=5`;
@@ -1582,7 +1602,6 @@
         }
       } catch (err) {}
 
-      // 2. OpenLibrary (respaldo)
       if (results.length === 0) {
         try {
           status.textContent = "Consultando catálogo de respaldo (OpenLibrary)...";
@@ -1663,7 +1682,6 @@
       }
     }
 
-    /* DETECTOR DE GÉNERO INTELIGENTE Y BILINGÜE */
     function guessCategory(title, author, userQuery, cats, desc) {
       const combined = [
         title || "",
@@ -1686,7 +1704,6 @@
         combined.includes("elegi vivir") || 
         combined.includes("elegí vivir") || 
         combined.includes("frankl") || 
-        combined.includes("man's search for meaning") ||
         combined.includes("biograf") || 
         combined.includes("memoir") || 
         combined.includes("testimonio") || 
@@ -1696,7 +1713,27 @@
         return "Biografía, Memorias & Testimonio";
       }
 
-      // 2. Clásicos de la Literatura
+      // 2. Psicología & Comportamiento (Rolón, Marian Rojas, Kahneman, etc.)
+      if (
+        combined.includes("rolón") ||
+        combined.includes("rolon") ||
+        combined.includes("la felicidad") ||
+        combined.includes("duelo") ||
+        combined.includes("psicoanal") ||
+        combined.includes("psicolog") || 
+        combined.includes("psychology") || 
+        combined.includes("marian rojas") ||
+        combined.includes("santandreu") ||
+        combined.includes("walter riso") ||
+        combined.includes("kahneman") || 
+        combined.includes("pensar rápido") || 
+        combined.includes("conducta") || 
+        combined.includes("emocion")
+      ) {
+        return "Psicología & Comportamiento";
+      }
+
+      // 3. Clásicos de la Literatura
       if (
         combined.includes("orwell") || 
         combined.includes("1984") || 
@@ -1716,7 +1753,7 @@
         return "Clásicos de la Literatura";
       }
 
-      // 3. Desarrollo Personal & Hábitos
+      // 4. Desarrollo Personal & Hábitos (Clear, Goggins, Duhigg)
       if (
         combined.includes("hábito") || 
         combined.includes("habito") || 
@@ -1730,18 +1767,6 @@
         combined.includes("disciplina")
       ) {
         return "Desarrollo Personal & Hábitos";
-      }
-
-      // 4. Psicología & Comportamiento
-      if (
-        combined.includes("psicolog") || 
-        combined.includes("psychology") || 
-        combined.includes("kahneman") || 
-        combined.includes("pensar rápido") || 
-        combined.includes("conducta") || 
-        combined.includes("mente")
-      ) {
-        return "Psicología & Comportamiento";
       }
 
       // 5. Historia
@@ -1803,6 +1828,7 @@
       const cat = document.getElementById('new-book-category').value;
       const cover = document.getElementById('new-book-cover').value;
       const targetStatus = document.getElementById('target-book-status').value;
+      const autoSessionChecked = document.getElementById('auto-create-session').checked;
 
       if (!title || !author || isNaN(pages) || pages <= 0) {
         alert("Por favor completa el título, autor y total de páginas.");
@@ -1810,9 +1836,10 @@
       }
 
       const initialPage = Math.min(pages, Math.max(0, startP));
+      const bookId = Date.now();
 
       const newB = {
-        id: Date.now(),
+        id: bookId,
         title: title,
         author: author,
         totalPages: pages,
@@ -1822,6 +1849,18 @@
         status: targetStatus,
         startedAt: new Date().toLocaleDateString('es-CL')
       };
+
+      // Si inició en página > 0 y dejó el check marcado, se inyecta la sesión inicial
+      if (initialPage > 0 && autoSessionChecked) {
+        appState.sessions.unshift({
+          bookId: bookId,
+          bookTitle: title,
+          date: new Date().toLocaleDateString('es-CL'),
+          minutes: 0,
+          pagesRead: initialPage,
+          isTimed: false
+        });
+      }
 
       if (targetStatus === 'active') {
         if (appState.activeBook) {
@@ -2060,18 +2099,24 @@
         <span class="dna-tag">${escapeHTML(cat)} (${n})</span>
       `).join('');
 
-      const topCat = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+      // Priorizar el libro activo o el último agregado para recomendar con afinidad inmediata
+      const referenceBook = appState.activeBook || all[all.length - 1];
+      const targetCat = referenceBook ? referenceBook.category : Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+
       document.getElementById('dna-description').textContent = 
-        `Tu perfil está enfocado principalmente en "${topCat}".`;
+        `Inspirado en tu lectura de "${targetCat}".`;
 
-      const backupList = BACKUP_RECS[topCat] || BACKUP_RECS["Historia & Memoria Histórica"];
-      renderRecCards(backupList, topCat);
+      // 1. Mostrar de inmediato la curaduría interna exacta
+      const backupList = BACKUP_RECS[targetCat] || BACKUP_RECS["Biografía, Memorias & Testimonio"];
+      renderRecCards(backupList, targetCat);
 
-      let qTopic = "historia memoria holocausto";
-      if (topCat.includes("Desarrollo")) qTopic = "habitos productividad";
-      else if (topCat.includes("Novela")) qTopic = "novela contemporanea";
-      else if (topCat.includes("Psicología")) qTopic = "psicologia comportamiento";
-      else if (topCat.includes("Biografía")) qTopic = "biografia memorias testimonio";
+      // 2. Consulta dinámica según categoría para enriquecer sugerencias
+      let qTopic = "biografia memorias testimonio resiliencia";
+      if (targetCat.includes("Psicología")) qTopic = "psicologia duelo emociones reflexiones";
+      else if (targetCat.includes("Desarrollo")) qTopic = "habitos productividad disciplina";
+      else if (targetCat.includes("Clásicos")) qTopic = "clasicos literatura universal";
+      else if (targetCat.includes("Historia")) qTopic = "historia memoria holocausto";
+      else if (targetCat.includes("Novela")) qTopic = "novela contemporanea ficcion";
 
       fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(qTopic)}&maxResults=3`)
         .then(r => r.json())
@@ -2088,7 +2133,7 @@
                 pages: inf.pageCount || 240
               };
             });
-            renderRecCards(apiRecs, topCat);
+            renderRecCards(apiRecs, targetCat);
           }
         })
         .catch(() => {});
