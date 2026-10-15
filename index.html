@@ -207,7 +207,7 @@
       width: 100%;
       height: 8px;
       background: #242424;
-      border-radius: 999px;
+      border-radius: 99px;
       overflow: hidden;
     }
     .progress-fill {
@@ -1002,6 +1002,11 @@
         { title: "Pensar rápido, pensar despacio", author: "Daniel Kahneman", cover: "https://covers.openlibrary.org/b/id/7884841-M.jpg", pages: 672 },
         { title: "Cuando nada es suficiente", author: "Ellen Hendriksen", cover: "https://covers.openlibrary.org/b/id/10291456-M.jpg", pages: 320 },
         { title: "Influencia", author: "Robert Cialdini", cover: "https://covers.openlibrary.org/b/id/8231856-M.jpg", pages: 304 }
+      ],
+      "Biografía, Memorias & Testimonio": [
+        { title: "Si esto es un hombre", author: "Primo Levi", cover: "https://covers.openlibrary.org/b/id/8314120-M.jpg", pages: 220 },
+        { title: "Elegí Vivir", author: "Daniela García", cover: "https://covers.openlibrary.org/b/id/12833521-M.jpg", pages: 224 },
+        { title: "El hombre que nunca escapó de Auschwitz", author: "Gabriel Salinger", cover: "https://covers.openlibrary.org/b/id/9324546-M.jpg", pages: 280 }
       ]
     };
 
@@ -1020,7 +1025,7 @@
     function registerSW() {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').then((reg) => {
-          reg.update(); // Fuerza al navegador a verificar si hay una versión nueva de sw.js
+          reg.update();
         }).catch(() => {});
       }
     }
@@ -1532,7 +1537,7 @@
       openModal('modal-add-book');
     }
 
-    /* BUSCADOR ROBUSTO */
+    /* BUSCADOR CON ASIGNACIÓN BILINGÜE Y EXTRACTO DE METADATOS */
     async function searchBookInfo() {
       const inputEl = document.getElementById('gbooks-query');
       const rawQ = inputEl.value.trim();
@@ -1569,7 +1574,8 @@
                 pages: inf.pageCount || '',
                 cover: thumb ? thumb.replace('http://', 'https://') : '',
                 year: inf.publishedDate ? inf.publishedDate.slice(0, 4) : '',
-                categories: inf.categories || []
+                categories: inf.categories || [],
+                description: inf.description || ''
               };
             });
           }
@@ -1595,7 +1601,8 @@
                   pages: b.number_of_pages || '',
                   cover: coverUrl,
                   year: b.publish_date ? b.publish_date.slice(-4) : '',
-                  categories: []
+                  categories: b.subjects ? b.subjects.map(s => s.name) : [],
+                  description: ''
                 });
               }
             }
@@ -1612,7 +1619,8 @@
                     pages: doc.number_of_pages_median || '',
                     cover: doc.cover_i ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg` : '',
                     year: doc.first_publish_year ? String(doc.first_publish_year) : '',
-                    categories: doc.subject || []
+                    categories: doc.subject || [],
+                    description: ''
                   };
                 });
               }
@@ -1627,7 +1635,7 @@
       }
 
       if (isISBN && results.length === 1) {
-        selectSearchResult(results[0]);
+        selectSearchResult(results[0], rawQ);
         status.textContent = "✓ Ejemplar encontrado por ISBN.";
         return;
       }
@@ -1647,52 +1655,143 @@
     }
 
     function pickSearchResult(idx) {
+      const rawQ = document.getElementById('gbooks-query').value.trim();
       if (currentSearchResults[idx]) {
-        selectSearchResult(currentSearchResults[idx]);
+        selectSearchResult(currentSearchResults[idx], rawQ);
         document.getElementById('search-results').style.display = 'none';
         document.getElementById('search-status').textContent = "✓ Obra seleccionada.";
       }
     }
 
-    /* DETECCIÓN AUTOMÁTICA DE CATEGORÍA */
-    function guessCategory(title, cats) {
-      const text = (title + " " + (cats ? cats.join(" ") : "")).toLowerCase();
+    /* DETECTOR DE GÉNERO INTELIGENTE Y BILINGÜE */
+    function guessCategory(title, author, userQuery, cats, desc) {
+      const combined = [
+        title || "",
+        author || "",
+        userQuery || "",
+        desc || "",
+        Array.isArray(cats) ? cats.join(" ") : (cats || "")
+      ].join(" ").toLowerCase();
 
-      if (text.includes("auschwitz") || text.includes("holocausto") || text.includes("memoria") || text.includes("biograf") || text.includes("testimonio") || text.includes("diario de")) {
+      // 1. Biografía, Memorias & Testimonio
+      if (
+        combined.includes("auschwitz") || 
+        combined.includes("holocausto") || 
+        combined.includes("holocaust") ||
+        combined.includes("levi") || 
+        combined.includes("eger") || 
+        combined.includes("the choice") ||
+        combined.includes("daniela garcia") || 
+        combined.includes("daniela garcía") || 
+        combined.includes("elegi vivir") || 
+        combined.includes("elegí vivir") || 
+        combined.includes("frankl") || 
+        combined.includes("man's search for meaning") ||
+        combined.includes("biograf") || 
+        combined.includes("memoir") || 
+        combined.includes("testimonio") || 
+        combined.includes("diario de") || 
+        combined.includes("autobiography")
+      ) {
         return "Biografía, Memorias & Testimonio";
       }
-      if (text.includes("historia") || text.includes("guerra") || text.includes("revolución") || text.includes("imperio")) {
-        return "Historia & Memoria Histórica";
-      }
-      if (text.includes("hábito") || text.includes("habitos") || text.includes("productividad") || text.includes("éxito") || text.includes("disciplina") || text.includes("superación")) {
-        return "Desarrollo Personal & Hábitos";
-      }
-      if (text.includes("psicolog") || text.includes("mente") || text.includes("conducta") || text.includes("emocion")) {
-        return "Psicología & Comportamiento";
-      }
-      if (text.includes("filosof") || text.includes("pensamiento") || text.includes("ética") || text.includes("moral")) {
-        return "Filosofía & Pensamiento";
-      }
-      if (text.includes("terror") || text.includes("misterio") || text.includes("crimen") || text.includes("suspenso") || text.includes("poe")) {
-        return "Terror, Suspenso & Misterio";
-      }
-      if (text.includes("clásico") || text.includes("clasico") || text.includes("quijote") || text.includes("dostoyevski") || text.includes("orwell")) {
+
+      // 2. Clásicos de la Literatura
+      if (
+        combined.includes("orwell") || 
+        combined.includes("1984") || 
+        combined.includes("nineteen eighty-four") || 
+        combined.includes("animal farm") || 
+        combined.includes("rebelión en la granja") || 
+        combined.includes("dostoyevski") || 
+        combined.includes("dostoevsky") || 
+        combined.includes("crimen y castigo") || 
+        combined.includes("poe") || 
+        combined.includes("camus") || 
+        combined.includes("el extranjero") || 
+        combined.includes("quijote") || 
+        combined.includes("classic") || 
+        combined.includes("clásico")
+      ) {
         return "Clásicos de la Literatura";
       }
+
+      // 3. Desarrollo Personal & Hábitos
+      if (
+        combined.includes("hábito") || 
+        combined.includes("habito") || 
+        combined.includes("atomic habits") || 
+        combined.includes("clear") || 
+        combined.includes("goggins") || 
+        combined.includes("can't hurt me") || 
+        combined.includes("productivid") || 
+        combined.includes("self-help") || 
+        combined.includes("superación") || 
+        combined.includes("disciplina")
+      ) {
+        return "Desarrollo Personal & Hábitos";
+      }
+
+      // 4. Psicología & Comportamiento
+      if (
+        combined.includes("psicolog") || 
+        combined.includes("psychology") || 
+        combined.includes("kahneman") || 
+        combined.includes("pensar rápido") || 
+        combined.includes("conducta") || 
+        combined.includes("mente")
+      ) {
+        return "Psicología & Comportamiento";
+      }
+
+      // 5. Historia
+      if (
+        combined.includes("historia") || 
+        combined.includes("history") || 
+        combined.includes("guerra") || 
+        combined.includes("war") || 
+        combined.includes("revolución") || 
+        combined.includes("imperio")
+      ) {
+        return "Historia & Memoria Histórica";
+      }
+
+      // 6. Terror, Suspenso & Misterio
+      if (
+        combined.includes("terror") || 
+        combined.includes("horror") || 
+        combined.includes("misterio") || 
+        combined.includes("thriller") || 
+        combined.includes("suspenso")
+      ) {
+        return "Terror, Suspenso & Misterio";
+      }
+
+      // 7. Filosofía
+      if (
+        combined.includes("filosof") || 
+        combined.includes("philosophy") || 
+        combined.includes("nietzsche") || 
+        combined.includes("séneca") || 
+        combined.includes("marco aurelio")
+      ) {
+        return "Filosofía & Pensamiento";
+      }
+
       return "Novela & Ficción Contemporánea";
     }
 
-    function selectSearchResult(item) {
+    function selectSearchResult(item, userQuery) {
       document.getElementById('new-book-title').value = item.title;
       document.getElementById('new-book-author').value = item.author;
       if (item.pages) document.getElementById('new-book-pages').value = item.pages;
       if (item.cover) document.getElementById('new-book-cover').value = item.cover;
 
-      // Auto-asignar categoría sugerida
-      const detectedCat = guessCategory(item.title, item.categories);
+      const detectedCat = guessCategory(item.title, item.author, userQuery, item.categories, item.description);
       const catSelect = document.getElementById('new-book-category');
       if (catSelect) {
         catSelect.value = detectedCat;
+        catSelect.dispatchEvent(new Event('change'));
       }
     }
 
@@ -1972,6 +2071,7 @@
       if (topCat.includes("Desarrollo")) qTopic = "habitos productividad";
       else if (topCat.includes("Novela")) qTopic = "novela contemporanea";
       else if (topCat.includes("Psicología")) qTopic = "psicologia comportamiento";
+      else if (topCat.includes("Biografía")) qTopic = "biografia memorias testimonio";
 
       fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(qTopic)}&maxResults=3`)
         .then(r => r.json())
