@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lector-pwa-v7';
+const CACHE_NAME = 'lector-pwa-v8';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -28,13 +28,13 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
 
-  // Consultas a APIs externas de libros van directo a internet
+  // Todo lo que sea búsqueda externa sale a internet directo sin pasar por caché
   if (url.hostname.includes('googleapis.com') || url.hostname.includes('openlibrary.org')) {
     e.respondWith(fetch(e.request));
     return;
   }
 
-  // Archivos de la app van por caché primero (soporte offline)
+  // Interfaz de la app
   e.respondWith(
     caches.match(e.request).then((cachedResponse) => {
       if (cachedResponse) {
