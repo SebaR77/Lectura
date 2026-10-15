@@ -1,5 +1,5 @@
-const CACHE_NAME = 'lector-pwa-v3';
-const ASSETS = [
+const CACHE_NAME = 'lector-pwa-v6';
+const STATIC_ASSETS = [
   './',
   './index.html',
   './manifest.json'
@@ -8,7 +8,7 @@ const ASSETS = [
 self.addEventListener('install', (e) => {
   self.skipWaiting();
   e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   );
 });
 
@@ -26,7 +26,26 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
+  const url = new URL(e.request.url);
+
+  // APIs externas van directo a la red
+  if (url.hostname.includes('googleapis.com') || url.hostname.includes('openlibrary.org')) {
+    e.respondWith(fetch(e.request));
+    return;
+  }
+
+  // Archivos de la app van por caché primero (offline)
   e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
+    caches.match(e.request).then((cachedResponse) => {
+      if (cachedResponse) {
+        fetch(e.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            caches.open(CACHE_NAME).then((cache) => cache.put(e.request, networkResponse));
+          }
+        }).catch(() => {});
+        return cachedResponse;
+      }
+      return fetch(e.request);
+    })
   );
 });
