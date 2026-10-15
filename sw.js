@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lector-pwa-v6';
+const CACHE_NAME = 'lector-pwa-v7';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -28,13 +28,13 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
 
-  // APIs externas van directo a la red
+  // Consultas a APIs externas de libros van directo a internet
   if (url.hostname.includes('googleapis.com') || url.hostname.includes('openlibrary.org')) {
     e.respondWith(fetch(e.request));
     return;
   }
 
-  // Archivos de la app van por caché primero (offline)
+  // Archivos de la app van por caché primero (soporte offline)
   e.respondWith(
     caches.match(e.request).then((cachedResponse) => {
       if (cachedResponse) {
